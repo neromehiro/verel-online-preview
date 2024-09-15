@@ -1,55 +1,38 @@
+// pages/index.js
 import React from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import 'tailwindcss/tailwind.css';
 
-const HomePage = () => {
+const news = [
+  {
+    title: "KDDIとOpenAIの対談",
+    content: "KDDIの高橋誠社長が、OpenAIの日本法人社長と対談し、AIの可能性について語りました。特に、オンデバイスAIに対する期待が高まっています。",
+  },
+  {
+    title: "ChatGPT-4の眼科知識",
+    content: "ChatGPT-4は、眼科関連の知識と臨床推論力において、眼科専門医と同等のレベルに達していることが報告されました。",
+  },
+  {
+    title: "新しいAIモデル「o1」",
+    content: "OpenAIは、新たなAIモデル「o1」を発表しました。このモデルは、ユーザーの入力に対して時間をかけて考え、より複雑なタスクを正確に解決する能力を持っています。",
+  },
+];
+
+export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">ようこそ、私のホームページへ！</h1>
-          <p className="text-xl text-gray-600">クリーンでモダンなデザインのウェブサイトです</p>
-        </header>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <h2 className="text-2xl font-semibold text-gray-800">自己紹介</h2>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                ここに自己紹介を書きます。モダンなUIコンポーネントを使って、
-                簡単にスタイリッシュなWebアプリケーションを作成しています。
-              </p>
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-                もっと詳しく
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <h2 className="text-2xl font-semibold text-gray-800">最近の投稿</h2>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {['モダンなUIデザインのトレンド', 'Reactの最新機能を探る', '効果的なレスポンシブデザイン'].map((post, index) => (
-                  <li key={index} className="flex items-center">
-                    <span className="mr-2 text-blue-500">●</span>
-                    <span className="text-gray-600">{post}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <footer className="mt-12 pt-4 border-t border-gray-200 text-center text-gray-500">
-          © 2024 My Stylish Homepage. All rights reserved.
-        </footer>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      {news.map((item, index) => (
+        <Card key={index} className="w-full max-w-md mb-4">
+          <CardHeader>
+            <h2 className="text-xl font-bold">{item.title}</h2>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">{item.content}</p>
+            <Button className="w-full">もっと見る</Button>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
-};
-
-export default HomePage;
+}
