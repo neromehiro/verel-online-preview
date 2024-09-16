@@ -28,7 +28,7 @@ export default function Blog() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'blur(8px)',
-          zIndex: -1,
+          zIndex: -1, // 背景を後ろに配置
         }}
       ></div>
 
@@ -92,4 +92,5 @@ export default function Blog() {
     </div>
   );
 }
+
 
