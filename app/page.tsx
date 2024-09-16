@@ -1,110 +1,217 @@
 // app/page.tsx
 "use client"
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Image from 'next/image';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react'; // ローディング用アイコン
+import React, { useRef, useEffect, useState } from "react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-// ニュース記事の型を定義
-interface NewsItem {
-  title: string;
-  url: string;
-  urlToImage: string | null;
-  publishedAt: string;
-  description: string;
-}
-
-// NewsAPIのエンドポイントとAPIキー
-const API_URL = 'https://newsapi.org/v2/top-headlines';
-const API_KEY = 'YOUR_NEWSAPI_KEY'; // 自分のAPIキーに置き換え
-
-export default function NewsPage() {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]); // 型を設定
-  const [loading, setLoading] = useState(true);
-
-  // ニュースを取得する関数
-  const fetchNews = async () => {
-    try {
-      const response = await axios.get(API_URL, {
-        params: {
-          country: 'us', // 国を指定
-          apiKey: API_KEY
-        }
-      });
-      setNewsItems(response.data.articles);
-    } catch (error) {
-      console.error('Error fetching news:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const BreakoutGame = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [gameOver, setGameOver] = useState(false);
+  const [gameWin, setGameWin] = useState(false);
 
   useEffect(() => {
-    fetchNews();
-    const interval = setInterval(fetchNews, 60000); // 1分ごとにニュースを更新
-    return () => clearInterval(interval);
-  }, []);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+
+    if (!canvas || !ctx) return;
+
+    // キャンバスの設定
+    canvas.width = 480;
+    canvas.height = 320;
+
+    // パドル設定
+    const paddleHeight = 10;
+    const paddleWidth = 75;
+    let paddleX = (canvas.width - paddleWidth) / 2;
+
+    // ボール設定
+    let ballRadius = 10;
+    let x = canvas.width / 2;
+    let y = canvas.height - 30;
+    let dx = 2;
+    let dy = -2;
+
+    // ブロック設定
+    const brickRowCount = 3;
+    const brickColumnCount = 5;
+    const brickWidth = 75;
+    const brickHeight = 20;
+    const brickPadding = 10;
+    const brickOffsetTop = 30;
+    const brickOffsetLeft = 30;
+
+    const bricks: any = [];
+    for (let c = 0; c < brickColumnCount; c++) {
+      bricks[c] = [];
+      for (let r = 0; r < brickRowCount; r++) {
+        bricks[c][r] = { x: 0, y: 0, status: 1 }; // ブロックが壊れていない状態
+      }
+    }
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    // キー操作イベント
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    function keyDownHandler(e: KeyboardEvent) {
+      if (e.key === "Right" || e.key === "ArrowRight") {
+        rightPressed = true;
+      } else if (e.key === "Left" || e.key === "ArrowLeft") {
+        leftPressed = true;
+      }
+    }
+
+    function keyUpHandler(e: KeyboardEvent) {
+      if (e.key === "Right" || e.key === "ArrowRight") {
+        rightPressed = false;
+      } else if (e.key === "Left" || e.key === "ArrowLeft") {
+        leftPressed = false;
+      }
+    }
+
+    // ボールの衝突検知
+    function collisionDetection() {
+      for (let c = 0; c < brickColumnCount; c++) {
+        for (let r = 0; r < brickRowCount; r++) {
+          const b = bricks[c][r];
+          if (b.status === 1) {
+            if (
+              x > b.x &&
+              x < b.x + brickWidth &&
+              y > b.y &&
+              y < b.y + brickHeight
+            ) {
+              dy = -dy;
+              b.status = 0; // ブロックを壊す
+              if (checkWin()) {
+                setGameWin(true);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 勝利条件のチェック
+    function checkWin() {
+      for (let c = 0; c < brickColumnCount; c++) {
+        for (let r = 0; r < brickRowCount; r++) {
+          if (bricks[c][r].status === 1) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    // ゲーム描画
+    function drawBricks() {
+      for (let c = 0; c < brickColumnCount; c++) {
+        for (let r = 0; r < brickRowCount; r++) {
+          if (bricks[c][r].status === 1) {
+            const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+            const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+            bricks[c][r].x = brickX;
+            bricks[c][r].y = brickY;
+            ctx.beginPath();
+            ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+          }
+        }
+      }
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#0095DD";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawPaddle() {
+      ctx.beginPath();
+      ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+      ctx.fillStyle = "#0095DD";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBricks();
+      drawBall();
+      drawPaddle();
+      collisionDetection();
+
+      if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+      }
+      if (y + dy < ballRadius) {
+        dy = -dy;
+      } else if (y + dy > canvas.height - ballRadius) {
+        if (x > paddleX && x < paddleX + paddleWidth) {
+          dy = -dy;
+        } else {
+          setGameOver(true);
+          return;
+        }
+      }
+
+      if (rightPressed && paddleX < canvas.width - paddleWidth) {
+        paddleX += 7;
+      } else if (leftPressed && paddleX > 0) {
+        paddleX -= 7;
+      }
+
+      x += dx;
+      y += dy;
+
+      if (!gameOver && !gameWin) {
+        requestAnimationFrame(draw);
+      }
+    }
+
+    draw();
+
+    return () => {
+      document.removeEventListener("keydown", keyDownHandler);
+      document.removeEventListener("keyup", keyUpHandler);
+    };
+  }, [gameOver, gameWin]);
 
   return (
-    <div className="relative w-full min-h-screen bg-gray-900">
-      {/* 背景画像 */}
-      <div className="absolute inset-0">
-        <Image
-          src="https://png.pngtree.com/thumb_back/fh260/background/20211014/pngtree-news-tv-broadcast-technology-background-image_909022.png"
-          alt="Background"
-          layout="fill"
-          objectFit="cover"
-          className="blur-md opacity-30"
-        />
-      </div>
-
-      {/* コンテンツ */}
-      <div className="relative z-10 p-6 space-y-6">
-        <h1 className="text-white text-4xl font-bold text-center">Latest News</h1>
-
-        {/* ローディング中の表示 */}
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <Loader2 className="animate-spin text-white w-12 h-12" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {newsItems.map((news, index) => (
-              <a
-                key={index}
-                href={news.url} // ニュース記事へのリンク
-                target="_blank" // 新しいタブで開く
-                rel="noopener noreferrer"
-                className="group"
-              >
-                <Card className="bg-white/90 group-hover:shadow-lg transform transition duration-200 ease-in-out">
-                  {news.urlToImage && (
-                    <div className="h-48 overflow-hidden rounded-t-md">
-                      <Image
-                        src={news.urlToImage}
-                        alt={news.title}
-                        width={600}
-                        height={300}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                      />
-                    </div>
-                  )}
-                  <CardHeader className="p-4">
-                    <h2 className="text-lg font-semibold">{news.title}</h2>
-                    <p className="text-sm text-gray-500">
-                      {new Date(news.publishedAt).toLocaleDateString()}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <p className="text-gray-700 truncate">{news.description}</p>
-                  </CardContent>
-                </Card>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <Card className="w-full max-w-lg shadow-md bg-white">
+        <CardHeader>
+          <h2 className="text-xl font-bold text-center">Breakout Game</h2>
+        </CardHeader>
+        <CardContent>
+          {gameOver ? (
+            <div className="text-center">
+              <p className="text-red-500">Game Over!</p>
+              <Button onClick={() => window.location.reload()} className="bg-blue-500 text-white mt-4">
+                Restart
+              </Button>
+            </div>
+          ) : gameWin ? (
+            <div className="text-center">
+              <p className="text-green-500">You Win!</p>
+              <Button onClick={() => window.location.reload()} className="bg-blue-500 text-white mt-4">
+                Play Again
+              </Button>
+            </div>
+          ) : (
+            <canvas ref={canvasRef} className="bg-black" />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default BreakoutGame;
