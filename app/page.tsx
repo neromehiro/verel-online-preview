@@ -4,15 +4,23 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react'; // ローディング用アイコン
+
+// ニュース記事の型を定義
+interface NewsItem {
+  title: string;
+  url: string;
+  urlToImage: string | null;
+  publishedAt: string;
+  description: string;
+}
 
 // NewsAPIのエンドポイントとAPIキー
 const API_URL = 'https://newsapi.org/v2/top-headlines';
-const API_KEY = 'YOUR_NEWSAPI_KEY'; // 自身のNewsAPIキーに差し替え
+const API_KEY = 'YOUR_NEWSAPI_KEY'; // 自分のAPIキーに置き換え
 
 export default function NewsPage() {
-  const [newsItems, setNewsItems] = useState([]);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]); // 型を設定
   const [loading, setLoading] = useState(true);
 
   // ニュースを取得する関数
@@ -20,7 +28,7 @@ export default function NewsPage() {
     try {
       const response = await axios.get(API_URL, {
         params: {
-          country: 'us', // 国を指定（'jp' で日本のニュースなど）
+          country: 'us', // 国を指定
           apiKey: API_KEY
         }
       });
